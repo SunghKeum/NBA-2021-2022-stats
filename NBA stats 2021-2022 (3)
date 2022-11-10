@@ -207,7 +207,7 @@ bpg as (
     from top_3_blk
     limit 1
         )
-        
+	
 select *
 from ppg
 UNION 
