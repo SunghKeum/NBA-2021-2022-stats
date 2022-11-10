@@ -1,0 +1,223 @@
+# Here, my goal was create a pivotable that showed top 3 players for each relevant stats such as PPG, APG, BPG, RPG, etc. I am aware that
+  this could've been done using crosstab function in PostgreSQL, but to make my life harder I use brute-force method instead for practice.
+
+
+with recursive traded_player as 
+     (select *
+      from nba_player_stats
+      where team = 'TOT'
+      UNION
+      select ps.*
+      from traded_player tp JOIN nba_player_stats ps ON tp.player = ps.player),
+team_tot as (	 
+      select *
+      from traded_player
+      where team = 'TOT'
+	           ),
+players_not_traded as (			
+      select *
+      from nba_player_stats
+      where id NOT IN (select id from team_tot)
+	                    ),
+players_finalized as (					  
+      select *
+      from players_not_traded
+      UNION
+      select *
+      from team_tot
+                      ),
+pts as (
+      select player, 
+             pts, 
+             rnk
+      from (
+              select *, 
+                     dense_rank() over(order by pts DESC) as rnk
+              from players_finalized
+           ) as a 
+      where rnk < 4
+       ),
+top_3_pts as (
+     select t1.player                             as first_place, 
+            t1.pts                                as first_place_pts, 
+            t2.player                             as second_place, 
+            t2.pts                                as second_place_pts, 
+            t3.player                             as third_place, 
+            t3.pts                                as third_place_pts
+     from pts t1 JOIN pts t2 ON t1.rnk < t2.rnk
+                 JOIN pts t3 ON t1.rnk < t3.rnk
+     where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
+             ),
+ppg as (
+     select 'points_per_game'                                                                                      as stats, 
+            CASE WHEN (select count(*) from top_3_pts) = 1 THEN first_place || ' (' || first_place_pts || ')'
+            WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_pts || ')'
+			      ELSE '(tie) ' || first_place || ' (' || first_place_pts || ')' END                                     as "1st_place",
+	          CASE WHEN (select count(*) from top_3_pts) = 1 THEN second_place || ' (' || second_place_pts || ')'
+            WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_pts || ')'
+		        ELSE '(tie) ' || second_place || ' (' || second_place_pts || ')' END                                   as "2nd_place",
+	          CASE WHEN (select count(*) from top_3_pts) = 1 THEN third_place || ' (' || third_place_pts || ')'
+            WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_pts || ')'
+			      ELSE '(tie) ' || third_place || ' (' || third_place_pts || ')' END                                     as "3rd_place"
+     from top_3_pts
+     limit 1
+	     ),
+ast as (
+    select player, 
+           ast, 
+           rnk
+    from (
+            select *, 
+                   dense_rank() over(order by ast DESC) as rnk
+            from players_finalized
+         ) as a 
+    where rnk < 4
+        ),
+top_3_ast as (
+    select t1.player                                    as first_place, 
+           t1.ast                                       as first_place_ast, 
+           t2.player                                    as second_place, 
+           t2.ast                                       as second_place_ast, 
+           t3.player                                    as third_place, 
+           t3.ast                                       as third_place_ast
+    from ast t1 JOIN ast t2 ON t1.rnk < t2.rnk
+                JOIN ast t3 ON t1.rnk < t3.rnk
+    where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
+             ),
+apg as (
+    select 'assists_per_game'                                                                                              as stats, 
+           CASE WHEN (select count(*) from top_3_ast) = 1 THEN first_place || ' (' || first_place_ast || ')'
+                WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_ast || ')'
+			          ELSE '(tie) ' || first_place || ' (' || first_place_ast || ')' END                                         as "1st_place",
+	         CASE WHEN (select count(*) from top_3_ast) = 1 THEN second_place || ' (' || second_place_ast || ')'
+                WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_ast || ')'
+		            ELSE '(tie) ' || second_place || ' (' || second_place_ast || ')' END                                       as "2nd_place",
+	         CASE WHEN (select count(*) from top_3_ast) = 1 THEN third_place || ' (' || third_place_ast || ')'
+                WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_ast || ')'
+			          ELSE '(tie) ' || third_place || ' (' || third_place_ast || ')' END                                         as "3rd_place"
+    from top_3_ast
+    limit 1
+        ),
+trb as (
+    select player, 
+           trb,
+           rnk
+    from (
+           select *, 
+                  dense_rank() over(order by trb DESC) as rnk
+           from players_finalized
+         ) as a 
+    where rnk < 4
+        ),
+top_3_trb as (
+    select t1.player                                      as first_place, 
+           t1.trb                                         as first_place_trb, 
+           t2.player                                      as second_place, 
+           t2.trb                                         as second_place_trb, 
+           t3.player                                      as third_place, 
+           t3.trb as third_place_trb
+    from trb t1 JOIN trb t2 ON t1.rnk < t2.rnk
+                JOIN trb t3 ON t1.rnk < t3.rnk
+    where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
+         ),
+rpg as (
+    select 'rebounds_per_game'                                                                                                 as stats, 
+            CASE WHEN (select count(*) from top_3_trb) = 1 THEN first_place || ' (' || first_place_trb || ')'
+                 WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_trb || ')'
+			           ELSE '(tie) ' || first_place || ' (' || first_place_trb || ')' END                                            as "1st_place",
+	          CASE WHEN (select count(*) from top_3_trb) = 1 THEN second_place || ' (' || second_place_trb || ')'
+                 WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_trb || ')'
+		             ELSE '(tie) ' || second_place || ' (' || second_place_trb || ')' END                                          as "2nd_place",
+	          CASE WHEN (select count(*) from top_3_trb) = 1 THEN third_place || ' (' || third_place_trb || ')'
+                 WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_trb || ')'
+			           ELSE '(tie) ' || third_place || ' (' || third_place_trb || ')' END                                            as "3rd_place"
+     from top_3_trb
+     limit 1
+         ),
+stl as (
+    select player, 
+           stl, 
+           rnk
+    from (
+            select *, 
+                  dense_rank() over(order by stl DESC) as rnk
+            from players_finalized
+         ) as a 
+    where rnk < 4
+        ),
+top_3_stl as (
+    select t1.player                                 as first_place, 
+           t1.stl                                    as first_place_stl, 
+           t2.player                                 as second_place, 
+           t2.stl                                    as second_place_stl, 
+           t3.player                                 as third_place, 
+           t3.stl                                    as third_place_stl
+   from stl t1 JOIN stl t2 ON t1.rnk < t2.rnk
+               JOIN stl t3 ON t1.rnk < t3.rnk
+   where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
+              ),
+spg as (
+    select 'steals_per_game'                                                                                                 as stats, 
+           CASE WHEN (select count(*) from top_3_stl) = 1 THEN first_place || ' (' || first_place_stl || ')'
+                WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_stl || ')'
+		          	ELSE '(tie) ' || first_place || ' (' || first_place_stl || ')' END                                           as "1st_place",
+	         CASE WHEN (select count(*) from top_3_stl) = 1 THEN second_place || ' (' || second_place_stl || ')'
+                WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_stl || ')'
+		            ELSE '(tie) ' || second_place || ' (' || second_place_stl || ')' END                                         as "2nd_place",
+	         CASE WHEN (select count(*) from top_3_stl) = 1 THEN third_place || ' (' || third_place_stl || ')'
+                WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_stl || ')'
+		          	ELSE '(tie) ' || third_place || ' (' || third_place_stl || ')' END                                           as "3rd_place"
+    from top_3_stl
+    limit 1
+        ),
+blk as (
+   select player, 
+          blk, 
+          rnk
+   from (
+          select *, 
+                 dense_rank() over(order by blk DESC) as rnk
+          from players_finalized
+         ) as a 
+   where rnk < 4
+         ),
+top_3_blk as (
+    select t1.player                                as first_place, 
+           t1.blk                                   as first_place_blk, 
+           t2.player                                as second_place, 
+           t2.blk                                   as second_place_blk, 
+           t3.player                                as third_place, 
+           t3.blk as third_place_blk
+    from blk t1 JOIN blk t2 ON t1.rnk < t2.rnk
+                JOIN blk t3 ON t1.rnk < t3.rnk
+    where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
+              ),
+bpg as (
+    select 'blocks_per_game' as stats, 
+           CASE WHEN (select count(*) from top_3_blk) = 1 THEN first_place || ' (' || first_place_blk || ')'
+                WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_blk || ')'
+	            	ELSE '(tie) ' || first_place || ' (' || first_place_blk || ')' END as "1st_place",
+	         CASE WHEN (select count(*) from top_3_blk) = 1 THEN second_place || ' (' || second_place_blk || ')'
+                WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_blk || ')'
+	              ELSE '(tie) ' || second_place || ' (' || second_place_blk || ')' END as "2nd_place",
+	         CASE WHEN (select count(*) from top_3_blk) = 1 THEN third_place || ' (' || third_place_blk || ')'
+                WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_blk || ')'
+			          ELSE '(tie) ' || third_place || ' (' || third_place_blk || ')' END as "3rd_place"
+    from top_3_blk
+    limit 1
+        )
+        
+select *
+from ppg
+UNION 
+select * 
+from apg
+UNION
+select *
+from rpg
+UNION
+select *
+from spg
+UNION
+select *
+from bpg
