@@ -1,0 +1,42 @@
+# For this project, I used data from [Kaggle](https://www.kaggle.com/datasets/vivovinco/nba-player-stats?datasetId=1882847) for exploration and answer some questions using SQL.
+# I used PostgreSQL for this analysis.
+
+-- Creating the table
+
+CREATE TABLE IF NOT EXISTS public.nba_player_stats
+(
+    id integer NOT NULL,
+    player character varying(50) COLLATE pg_catalog."default",
+    "position" character varying(10) COLLATE pg_catalog."default",
+    age integer,
+    team character varying(5) COLLATE pg_catalog."default",
+    games_played integer,
+    games_started integer,
+    mp numeric,
+    fg numeric,
+    fga numeric,
+    "fg%" numeric,
+    "3p" numeric,
+    "3pa" numeric,
+    "3p%" numeric,
+    "2p" numeric,
+    "2pa" numeric,
+    "2p%" numeric,
+    "efg%" numeric,
+    ft numeric,
+    fta numeric,
+    "ft%" numeric,
+    orb numeric,
+    drb numeric,
+    trb numeric,
+    ast numeric,
+    stl numeric,
+    blk numeric,
+    tov numeric,
+    pf numeric,
+    pts numeric
+)
+
+-- Then, I import 2021-2022 NBA Player Stats - Regular.csv into the table.
+
+ # View NBA stats 2021-2022 (2) for analysis.
