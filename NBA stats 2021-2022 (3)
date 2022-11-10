@@ -1,5 +1,6 @@
 # Here, my goal was create a pivotable that showed top 3 players for each relevant stats such as PPG, APG, BPG, RPG, etc. I am aware that
-  this could've been done using crosstab function in PostgreSQL, but to make my life harder I use brute-force method instead for practice.
+  this could've been done using crosstab function in PostgreSQL to simplify and shorten the code, but to make my life harder I use brute-force method 
+  instead for practice.
 
 
 with recursive traded_player as 
