@@ -39,6 +39,6 @@ CREATE TABLE IF NOT EXISTS public.nba_player_stats
     pts numeric
 )
 
--- Then, I import 2021-2022 NBA Player Stats - Regular.csv into the table.
+# Then, I import 2021-2022 NBA Player Stats - Regular.csv into the table.
 
- **View NBA stats 2021-2022 (2) for analysis**
+# View NBA stats 2021-2022 (2) for analysis**
