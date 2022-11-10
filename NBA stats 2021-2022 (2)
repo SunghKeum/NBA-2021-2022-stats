@@ -1,0 +1,51 @@
+CREATE OR REPLACE view new_nba_player_stats AS
+		select *, row_number() over() as assigned_value 
+		from nba_player_stats
+
+
+CREATE MATERIALIZED VIEW compare_stats AS 
+
+    -- querying for all the players who were traded during the season
+
+	with recursive traded_player as 
+	     (select *
+	      from new_nba_player_stats
+	      where team = 'TOT'
+	      UNION
+	      select ps.*
+	      from traded_player tp JOIN new_nba_player_stats ps ON tp.player = ps.player)
+	
+	select player, position, team, (pts + trb + ast + stl + blk - tov - ( fga - fg ) - ( fta - ft )) AS efficiency, row_number() over(partition by player order by assigned_value) as rn     
+	from traded_player
+	order by player, assigned_value
+
+
+/* Comparing players's efficiency from before and after trade (Note:some players have been traded more than once during the season: 
+   following code compares stat for first round of trade) */  	
+	
+select worse_improve, count(*) as number_of_players
+	from (
+		   select t1.player, 
+		          CASE WHEN (t2.efficiency - t1.efficiency) < 0 THEN 0 ELSE 1 END AS worse_improve
+	       from compare_stats t1 JOIN compare_stats t2 ON t1.player = t2.player AND t1.rn < t2.rn
+	       where t1.rn = 2 AND t2.rn = 3
+		 ) as binary_outcome  
+	group by worse_improve
+
+
+/* of those whose efficiency deteriorated after first round of trade, how many have improved or worsened 
+   after second round of trade */
+	    
+with efficiency_worsened as (
+	select t2.*
+	from compare_stats t1 JOIN compare_stats t2 ON t1.player = t2.player AND t1.rn < t2.rn
+	where t1.rn = 2 AND t2.rn = 3 AND t2.efficiency - t1.efficiency < 0
+	                     )
+	
+	select worse_improve, count(*) as number_of_players
+	from (
+	       select CASE WHEN t3.efficiency - efficiency_worsened.efficiency < 0 THEN 0 ELSE 1 END AS worse_improve
+	       from efficiency_worsened JOIN compare_stats t3 ON efficiency_worsened.player = t3.player 
+	       where efficiency_worsened.rn = 3 AND t3.rn = 4
+		  ) as a
+	group by worse_improve
