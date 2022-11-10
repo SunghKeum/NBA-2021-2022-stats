@@ -50,16 +50,16 @@ top_3_pts as (
      where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
              ),
 ppg as (
-     select 'points_per_game'                                                                                      as stats, 
+     select 'points_per_game'                                                                                           as stats, 
             CASE WHEN (select count(*) from top_3_pts) = 1 THEN first_place || ' (' || first_place_pts || ')'
-            WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_pts || ')'
-			      ELSE '(tie) ' || first_place || ' (' || first_place_pts || ')' END                                     as "1st_place",
-	          CASE WHEN (select count(*) from top_3_pts) = 1 THEN second_place || ' (' || second_place_pts || ')'
-            WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_pts || ')'
-		        ELSE '(tie) ' || second_place || ' (' || second_place_pts || ')' END                                   as "2nd_place",
-	          CASE WHEN (select count(*) from top_3_pts) = 1 THEN third_place || ' (' || third_place_pts || ')'
-            WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_pts || ')'
-			      ELSE '(tie) ' || third_place || ' (' || third_place_pts || ')' END                                     as "3rd_place"
+                 WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_pts || ')'
+                 ELSE '(tie) ' || first_place || ' (' || first_place_pts || ')' END                                     as "1st_place",
+	    CASE WHEN (select count(*) from top_3_pts) = 1 THEN second_place || ' (' || second_place_pts || ')'
+                 WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_pts || ')'
+	         ELSE '(tie) ' || second_place || ' (' || second_place_pts || ')' END                                   as "2nd_place",
+	    CASE WHEN (select count(*) from top_3_pts) = 1 THEN third_place || ' (' || third_place_pts || ')'
+                 WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_pts || ')'
+		 ELSE '(tie) ' || third_place || ' (' || third_place_pts || ')' END                                     as "3rd_place"
      from top_3_pts
      limit 1
 	     ),
@@ -89,13 +89,13 @@ apg as (
     select 'assists_per_game'                                                                                              as stats, 
            CASE WHEN (select count(*) from top_3_ast) = 1 THEN first_place || ' (' || first_place_ast || ')'
                 WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_ast || ')'
-			          ELSE '(tie) ' || first_place || ' (' || first_place_ast || ')' END                                         as "1st_place",
-	         CASE WHEN (select count(*) from top_3_ast) = 1 THEN second_place || ' (' || second_place_ast || ')'
+		ELSE '(tie) ' || first_place || ' (' || first_place_ast || ')' END                                         as "1st_place",
+	   CASE WHEN (select count(*) from top_3_ast) = 1 THEN second_place || ' (' || second_place_ast || ')'
                 WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_ast || ')'
-		            ELSE '(tie) ' || second_place || ' (' || second_place_ast || ')' END                                       as "2nd_place",
-	         CASE WHEN (select count(*) from top_3_ast) = 1 THEN third_place || ' (' || third_place_ast || ')'
+		ELSE '(tie) ' || second_place || ' (' || second_place_ast || ')' END                                       as "2nd_place",
+	   CASE WHEN (select count(*) from top_3_ast) = 1 THEN third_place || ' (' || third_place_ast || ')'
                 WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_ast || ')'
-			          ELSE '(tie) ' || third_place || ' (' || third_place_ast || ')' END                                         as "3rd_place"
+		ELSE '(tie) ' || third_place || ' (' || third_place_ast || ')' END                                         as "3rd_place"
     from top_3_ast
     limit 1
         ),
@@ -125,13 +125,13 @@ rpg as (
     select 'rebounds_per_game'                                                                                                 as stats, 
             CASE WHEN (select count(*) from top_3_trb) = 1 THEN first_place || ' (' || first_place_trb || ')'
                  WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_trb || ')'
-			           ELSE '(tie) ' || first_place || ' (' || first_place_trb || ')' END                                            as "1st_place",
-	          CASE WHEN (select count(*) from top_3_trb) = 1 THEN second_place || ' (' || second_place_trb || ')'
+		 ELSE '(tie) ' || first_place || ' (' || first_place_trb || ')' END                                            as "1st_place",
+	    CASE WHEN (select count(*) from top_3_trb) = 1 THEN second_place || ' (' || second_place_trb || ')'
                  WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_trb || ')'
-		             ELSE '(tie) ' || second_place || ' (' || second_place_trb || ')' END                                          as "2nd_place",
-	          CASE WHEN (select count(*) from top_3_trb) = 1 THEN third_place || ' (' || third_place_trb || ')'
+		 ELSE '(tie) ' || second_place || ' (' || second_place_trb || ')' END                                          as "2nd_place",
+	    CASE WHEN (select count(*) from top_3_trb) = 1 THEN third_place || ' (' || third_place_trb || ')'
                  WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_trb || ')'
-			           ELSE '(tie) ' || third_place || ' (' || third_place_trb || ')' END                                            as "3rd_place"
+		 ELSE '(tie) ' || third_place || ' (' || third_place_trb || ')' END                                            as "3rd_place"
      from top_3_trb
      limit 1
          ),
@@ -161,13 +161,13 @@ spg as (
     select 'steals_per_game'                                                                                                 as stats, 
            CASE WHEN (select count(*) from top_3_stl) = 1 THEN first_place || ' (' || first_place_stl || ')'
                 WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_stl || ')'
-		          	ELSE '(tie) ' || first_place || ' (' || first_place_stl || ')' END                                           as "1st_place",
-	         CASE WHEN (select count(*) from top_3_stl) = 1 THEN second_place || ' (' || second_place_stl || ')'
+		ELSE '(tie) ' || first_place || ' (' || first_place_stl || ')' END                                           as "1st_place",
+	   CASE WHEN (select count(*) from top_3_stl) = 1 THEN second_place || ' (' || second_place_stl || ')'
                 WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_stl || ')'
-		            ELSE '(tie) ' || second_place || ' (' || second_place_stl || ')' END                                         as "2nd_place",
-	         CASE WHEN (select count(*) from top_3_stl) = 1 THEN third_place || ' (' || third_place_stl || ')'
+		ELSE '(tie) ' || second_place || ' (' || second_place_stl || ')' END                                         as "2nd_place",
+	   CASE WHEN (select count(*) from top_3_stl) = 1 THEN third_place || ' (' || third_place_stl || ')'
                 WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_stl || ')'
-		          	ELSE '(tie) ' || third_place || ' (' || third_place_stl || ')' END                                           as "3rd_place"
+		ELSE '(tie) ' || third_place || ' (' || third_place_stl || ')' END                                           as "3rd_place"
     from top_3_stl
     limit 1
         ),
@@ -194,16 +194,16 @@ top_3_blk as (
     where t1.rnk = 1 AND t2.rnk = 2 AND t3.rnk = 3
               ),
 bpg as (
-    select 'blocks_per_game' as stats, 
+    select 'blocks_per_game'                                                                                               as stats, 
            CASE WHEN (select count(*) from top_3_blk) = 1 THEN first_place || ' (' || first_place_blk || ')'
                 WHEN first_place = lead(first_place, 1) over() THEN first_place || ' (' || first_place_blk || ')'
-	            	ELSE '(tie) ' || first_place || ' (' || first_place_blk || ')' END as "1st_place",
+	            	ELSE '(tie) ' || first_place || ' (' || first_place_blk || ')' END                                 as "1st_place",
 	         CASE WHEN (select count(*) from top_3_blk) = 1 THEN second_place || ' (' || second_place_blk || ')'
                 WHEN second_place = lead(second_place, 1) over() THEN second_place || ' (' || second_place_blk || ')'
-	              ELSE '(tie) ' || second_place || ' (' || second_place_blk || ')' END as "2nd_place",
+	              ELSE '(tie) ' || second_place || ' (' || second_place_blk || ')' END                                 as "2nd_place",
 	         CASE WHEN (select count(*) from top_3_blk) = 1 THEN third_place || ' (' || third_place_blk || ')'
                 WHEN third_place = lead(third_place, 1) over() THEN third_place || ' (' || third_place_blk || ')'
-			          ELSE '(tie) ' || third_place || ' (' || third_place_blk || ')' END as "3rd_place"
+			          ELSE '(tie) ' || third_place || ' (' || third_place_blk || ')' END                       as "3rd_place"
     from top_3_blk
     limit 1
         )
