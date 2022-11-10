@@ -1,5 +1,7 @@
-# For this project, I used data from [Kaggle](https://www.kaggle.com/datasets/vivovinco/nba-player-stats?datasetId=1882847) for exploration and answer some questions using SQL.
+# For this project, I used data from [Kaggle](https://www.kaggle.com/datasets/vivovinco/nba-player-stats?datasetId=1882847) for exploration and answer some 
+  questions using SQL.
 # I used PostgreSQL for this analysis.
+
 
 -- Creating the table
 
@@ -39,4 +41,4 @@ CREATE TABLE IF NOT EXISTS public.nba_player_stats
 
 -- Then, I import 2021-2022 NBA Player Stats - Regular.csv into the table.
 
- # View NBA stats 2021-2022 (2) for analysis.
+ **View NBA stats 2021-2022 (2) for analysis**
