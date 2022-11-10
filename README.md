@@ -1,1 +1,1 @@
-# NBA-2021-2022-stats
+## Hello there! Welcome to my SQL Portfolio. Here, you will find codes I have written using SQL. I am always looking to hone my SQL skills - *constructive criticism is welcomed*. Please feel free to contact me with any feedback or questions through [LinkedIn](www.linkedin.com/in/sung-keum).
