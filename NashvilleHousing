@@ -1,0 +1,118 @@
+# Cleaning data using SQL. 
+# All credit goes to Alex The Analyst (https://www.youtube.com/watch?v=8rO7ztF4NtU) for guiding me through this project.
+# Data can be found here (https://github.com/AlexTheAnalyst/PortfolioProjects/blob/main/Nashville%20Housing%20Data%20for%20Data%20Cleaning.xlsx).
+
+
+--Let's take a look at our data
+
+Select *
+From PracticeSQL.dbo.NashvilleHousing
+
+------------------------------------------------------------------------------------------------------------------------------
+
+--Standardize Date Format
+
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ALTER COLUMN SaleDate Date;
+
+--or 
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+SET SaleDate = CONVERT(Date, SaleDate);
+
+------------------------------------------------------------------------------------------------------------------------------
+
+--Populate null Property Address data
+
+Select a.ParcelID, b.ParcelID, a.PropertyAddress, b.PropertyAddress, ISNULL(a.PropertyAddress, b.PropertyAddress)
+From PracticeSQL.dbo.NashvilleHousing a
+JOIN PracticeSQL.dbo.NashvilleHousing b
+ON a.ParcelID = b.ParcelID AND a.UniqueID <> b.UniqueID
+Where a.PropertyAddress is null
+
+UPDATE a
+Set PropertyAddress = ISNULL(a.PropertyAddress, b.PropertyAddress)
+From PracticeSQL.dbo.NashvilleHousing a
+JOIN PracticeSQL.dbo.NashvilleHousing b
+ON a.ParcelID = b.ParcelID AND a.UniqueID <> b.UniqueID
+
+------------------------------------------------------------------------------------------------------------------------------
+
+--Breaking out Address into Individual Columns (Address, City, State)
+
+--Breaking out PropertyAddress column
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ADD Address varchar(50);
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+Set Address = PARSENAME(Replace(PropertyAddress, ',', '.'), 2)
+
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ADD City varchar(50);
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+Set City = PARSENAME(Replace(PropertyAddress, ',', '.'), 1)
+
+--Breaking out OwnerAddress column
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ADD OwnerStreet varchar(50);
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+SET OwnerStreet = PARSENAME(Replace(OwnerAddress, ',', '.'), 3)
+
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ADD OwnerCity varchar(50);
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+SET OwnerCity = PARSENAME(Replace(OwnerAddress, ',', '.'), 2)
+
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+ADD OwnerState varchar(50);
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+SET OwnerState = PARSENAME(Replace(OwnerAddress, ',', '.'), 1)
+
+------------------------------------------------------------------------------------------------------------------------------
+
+--Change Y and N to Yes and No in "SoldAsVacant" column
+
+SELECT Distinct SoldAsVacant, count(SoldAsVacant)
+FROM PracticeSQL.dbo.NashvilleHousing
+Group by SoldAsVacant
+
+UPDATE PracticeSQL.dbo.NashvilleHousing
+SET SoldAsVacant = Case WHEN SoldAsVacant = 'N' THEN 'No'
+                        WHEN SoldAsVacant = 'Y' THEN 'Yes'
+				        ELSE SoldAsVacant
+				   END 
+           
+------------------------------------------------------------------------------------------------------------------------------
+
+--Remove Duplicates
+
+WITH CTE AS (
+SELECT *, 
+       ROW_NUMBER() Over (
+	   PARTITION BY ParcelID, 
+					PropertyAddress, 
+					SaleDate, 
+					SalePrice, 
+					LegalReference 
+	                Order by UniqueID
+					      ) AS RowNum
+FROM PracticeSQL.dbo.NashvilleHousing
+             )
+
+DELETE
+FROM CTE
+WHERE RowNum > 1
+
+------------------------------------------------------------------------------------------------------------------------------
+
+--Delete Unused Columns
+
+SELECT *
+FROM PracticeSQL.dbo.NashvilleHousing
+
+ALTER TABLE PracticeSQL.dbo.NashvilleHousing
+DROP COLUMN TaxDistrict, PropertyAddress, OwnerAddress
