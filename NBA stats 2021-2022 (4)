@@ -1,0 +1,72 @@
+# In this excercise, I rank players by their efficiency rating. Before we start, it is worth mentioning that for players who have moved teams, the "TOT" value 
+  under "Team" column represents total of the stats for the season. For example, if a player switched team from New York to Chicago, there will be 3 rows for 
+  the player, one for New York, one for Chicago, and one for total of the stats. 
+
+
+-- Players's most recent team and position for those who changed team. Note: compare_stats is materialized view from NBA stats 2021-2022 (2)
+
+with traded_player_last_record as (
+select distinct on (player) player, 
+       position, 
+       team, 
+       rn
+from compare_stats
+order by player, rn DESC
+                                   ),
+								   
+-- Top 50 players based on efficiency rating
+  
+efficiency_rating_50 as (
+select player,
+       position,
+       team,
+       efficiency
+from (
+       select player, 
+              position, 
+              team, 
+              (pts + trb + ast + stl + blk - tov - ( fga - fg ) - ( fta - ft ))                                     as efficiency, 
+              dense_rank() over(order by (pts + trb + ast + stl + blk - tov - ( fga - fg ) - ( fta - ft )) DESC)    as rnk 	
+       from (select *, 
+                    row_number() over(partition by player order by assigned_value) as rn
+             from new_nba_player_stats) as a	
+       where rn = 1	
+	   ) as b
+where rnk <= 50
+	                    ),		
+						
+/* Position and team values for players who switched teams during the season are replaced with their most recent values for purpose 
+   of this exercise */
+   
+cleaned_top_50 as (   			
+select t1.player, 
+       CASE WHEN t2.position is null THEN t1.position ELSE t2.position END            as position, 
+	     CASE WHEN t2.team is null THEN t1.team ELSE t2.team END                        as team, 
+	     efficiency
+from efficiency_rating_50 t1 LEFT JOIN traded_player_last_record t2 ON t1.player = t2.player
+order by efficiency DESC
+	                 )
+
+
+# Analysis of the top 50 efficient players
+
+-- Rank players by their efficiency rating 
+
+select player,
+       position,
+       team,
+       efficiency
+from cleaned_top_50
+
+-- What is the distribution of position in top 50 efficient ranking?
+
+select position, count(*) as number_of_players
+from cleaned_top_50
+group by position
+order by count(*) DESC
+
+-- What is the distribution of top 50 efficienct players by their respective team
+
+select team, count(*) as number_of_players 
+from cleaned_top_50
+group by team
