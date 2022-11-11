@@ -29,11 +29,12 @@ from (
               dense_rank() over(order by (pts + trb + ast + stl + blk - tov - ( fga - fg ) - ( fta - ft )) DESC)    as rnk 	
        from (select *, 
                     row_number() over(partition by player order by assigned_value) as rn
-             from new_nba_player_stats) as a	
+             from new_nba_player_stats
+	     ) as a	
        where rn = 1	
-	   ) as b
+      ) as b
 where rnk <= 50
-	                    ),		
+                         ),		
 						
 /* Position and team values for players who switched teams during the season are replaced with their most recent values for purpose 
    of this exercise */
@@ -45,7 +46,7 @@ select t1.player,
 	     efficiency
 from efficiency_rating_50 t1 LEFT JOIN traded_player_last_record t2 ON t1.player = t2.player
 order by efficiency DESC
-	                 )
+	            )
 
 
 # Analysis of the top 50 efficient players
