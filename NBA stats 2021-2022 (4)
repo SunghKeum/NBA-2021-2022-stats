@@ -2,7 +2,6 @@
   under "Team" column represents total of the stats for the season. For example, if a player switched team from New York to Chicago, there will be 3 rows for 
   the player, one for New York, one for Chicago, and one for total of the stats. 
 
-
 -- Players's most recent team and position for those who changed team. Note: compare_stats is materialized view from NBA stats 2021-2022 (2)
 
 with traded_player_last_record as (
