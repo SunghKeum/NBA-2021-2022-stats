@@ -1,0 +1,102 @@
+# In this practice, I apply my knowledge in Stored Procedure to create tables that track orders placed by the company, their inventory level, and orders placed by 
+  their customers. 
+  
+  
+-- Tracks orders placed by the company
+CREATE TABLE IF NOT EXISTS company_order (
+    order_id SERIAL PRIMARY KEY,
+	order_date DATE,
+    product_name VARCHAR(50),
+	quantity_ordered INT
+);
+
+-- Tracks inventory level for each product for the company
+CREATE TABLE IF NOT EXISTS inventory (
+	product_code SERIAL PRIMARY KEY,
+	product_name VARCHAR(50),
+	quantity_remaining INT,
+	quantity_sold INT
+);
+
+-- Tracks items purchased by customers
+CREATE TABLE IF NOT EXISTS sales (
+	id SERIAL PRIMARY KEY,
+	sales_date DATE,
+	product_code INT REFERENCES inventory (product_code),
+	quantity_ordered INT
+);
+	
+  
+-- Following procedure is used to update both company's order and inventory tracker when company places an order.
+CREATE OR REPLACE PROCEDURE place_order (p_product_name varchar, p_quantity INT)
+language plpgsql
+as $$
+declare
+   v_count      INT;
+begin
+   -- When company places an order, it updates the order table.
+   insert into company_order (order_date, product_name, quantity_ordered)
+       values (current_date, p_product_name, p_quantity);
+      
+   select count(*)
+   into v_count
+   from inventory
+   where product_name = p_product_name;
+   
+   -- Item ordered by the company is a new item.
+   if v_count = 0 then 
+          insert into inventory (product_name, quantity_remaining, quantity_sold)
+              values (p_product_name, p_quantity, 0); 
+			  
+		      raise notice 'New product added!';
+		  
+   -- Updates inventory
+   else
+          update inventory
+		      set quantity_remaining = (quantity_remaining + p_quantity)
+		      where product_name = p_product_name;
+		  
+		      raise notice 'Quantity updated!';
+   end if;
+end;
+$$
+
+
+-- Following procedure is used to update sales and inventory tables when customer places an order.
+CREATE OR REPLACE PROCEDURE customer_sales (p_product_name varchar, p_quantity INT)
+language plpgsql
+as $$
+declare
+   v_count        INT;
+   v_product_code INT;
+begin
+   -- Checking for inventory level to ensure quantity is sufficient to cover customer order.
+   select count(*)
+   into v_count
+   from inventory
+   where product_name = p_product_name AND quantity_remaining >= p_quantity;
+   
+   select product_code
+   into v_product_code
+   from inventory
+   where product_name = p_product_name;
+   
+   -- Sufficient quantity, and updates sales and inventory tables.
+   if v_count > 0 then 
+         insert into sales (sales_date, product_code, quantity_ordered)
+              values (current_date, v_product_code, p_quantity);
+		 
+		     update inventory
+		        set quantity_remaining = (quantity_remaining - p_quantity),
+		            quantity_sold = (quantity_sold + p_quantity)
+		        where product_code = v_product_code;
+   
+		     raise notice 'Product Sold!';
+		  
+   -- Inventory level not sufficient to cover customer order.
+   else
+		     raise notice 'Quantity not sufficient';
+   end if;
+end;
+$$
+
