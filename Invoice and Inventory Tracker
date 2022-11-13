@@ -53,8 +53,8 @@ begin
    -- Updates inventory
    else
        update inventory
-           set quantity_remaining = (quantity_remaining + p_quantity)
-	   where product_name = p_product_name;
+          set quantity_remaining = (quantity_remaining + p_quantity)
+	  where product_name = p_product_name;
 		  
        raise notice 'Quantity updated!';
    end if;
@@ -87,9 +87,9 @@ begin
           values (current_date, v_product_code, p_quantity);
 		 
        update inventory
-	   set quantity_remaining = (quantity_remaining - p_quantity),
-	       quantity_sold = (quantity_sold + p_quantity)
-	   where product_code = v_product_code;
+	  set quantity_remaining = (quantity_remaining - p_quantity),
+	      quantity_sold = (quantity_sold + p_quantity)
+	  where product_code = v_product_code;
    
        raise notice 'Product Sold!';
 		  
