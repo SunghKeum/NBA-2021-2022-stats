@@ -5,25 +5,25 @@
 -- Tracks orders placed by the company
 CREATE TABLE IF NOT EXISTS company_order (
     order_id SERIAL PRIMARY KEY,
-	order_date DATE,
+    order_date DATE,
     product_name VARCHAR(50),
-	quantity_ordered INT
+    quantity_ordered INT
 );
 
 -- Tracks inventory level for each product for the company
 CREATE TABLE IF NOT EXISTS inventory (
-	product_code SERIAL PRIMARY KEY,
-	product_name VARCHAR(50),
-	quantity_remaining INT,
-	quantity_sold INT
+    product_code SERIAL PRIMARY KEY,
+    product_name VARCHAR(50),
+    quantity_remaining INT,
+    quantity_sold INT
 );
 
 -- Tracks items purchased by customers
 CREATE TABLE IF NOT EXISTS sales (
-	id SERIAL PRIMARY KEY,
-	sales_date DATE,
-	product_code INT REFERENCES inventory (product_code),
-	quantity_ordered INT
+    id SERIAL PRIMARY KEY,
+    sales_date DATE,
+    product_code INT REFERENCES inventory (product_code),
+    quantity_ordered INT
 );
 	
   
@@ -45,18 +45,18 @@ begin
    
    -- Item ordered by the company is a new item.
    if v_count = 0 then 
-          insert into inventory (product_name, quantity_remaining, quantity_sold)
-              values (p_product_name, p_quantity, 0); 
+       insert into inventory (product_name, quantity_remaining, quantity_sold)
+          values (p_product_name, p_quantity, 0); 
 			  
-		      raise notice 'New product added!';
+       raise notice 'New product added!';
 		  
    -- Updates inventory
    else
-          update inventory
-		      set quantity_remaining = (quantity_remaining + p_quantity)
-		      where product_name = p_product_name;
+       update inventory
+           set quantity_remaining = (quantity_remaining + p_quantity)
+	   where product_name = p_product_name;
 		  
-		      raise notice 'Quantity updated!';
+       raise notice 'Quantity updated!';
    end if;
 end;
 $$
@@ -83,19 +83,19 @@ begin
    
    -- Sufficient quantity, and updates sales and inventory tables.
    if v_count > 0 then 
-         insert into sales (sales_date, product_code, quantity_ordered)
-              values (current_date, v_product_code, p_quantity);
+       insert into sales (sales_date, product_code, quantity_ordered)
+          values (current_date, v_product_code, p_quantity);
 		 
-		     update inventory
-		        set quantity_remaining = (quantity_remaining - p_quantity),
-		            quantity_sold = (quantity_sold + p_quantity)
-		        where product_code = v_product_code;
+       update inventory
+	   set quantity_remaining = (quantity_remaining - p_quantity),
+	       quantity_sold = (quantity_sold + p_quantity)
+	   where product_code = v_product_code;
    
-		     raise notice 'Product Sold!';
+       raise notice 'Product Sold!';
 		  
    -- Inventory level not sufficient to cover customer order.
    else
-		     raise notice 'Quantity not sufficient';
+       raise notice 'Quantity not sufficient';
    end if;
 end;
 $$
